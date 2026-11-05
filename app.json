@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "RecycLedger",
+    "slug": "recycledger",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#f3f7f4" },
+    "android": { "package": "com.recycledger.factory" },
+    "ios": { "bundleIdentifier": "com.recycledger.factory" },
+    "web": { "bundler": "metro" }
+  }
+}
