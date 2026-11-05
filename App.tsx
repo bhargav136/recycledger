@@ -39,6 +39,7 @@ export default function App() {
 
   async function loadMembership() {
     if (!session) return;
+    if (session.user.id === "demo-owner-id") return;
     const {data,error} = await supabase.from("factory_members")
       .select("factory_id, role").eq("user_id",session.user.id).eq("active",true).limit(1).maybeSingle();
     if (error || !data || !["owner","admin"].includes(data.role)) {
@@ -46,6 +47,12 @@ export default function App() {
       return;
     }
     setRole(data.role); setFactoryId(data.factory_id);
+  }
+
+  function enterDemo() {
+    setSession({ user: { id: "demo-owner-id", email: "demo@recycledger.com" } } as any);
+    setRole("owner");
+    setFactoryId("demo-factory-id");
   }
 
   async function loadModule(key: ModuleKey) {
@@ -135,7 +142,7 @@ export default function App() {
     else Alert.alert("Report created",file.uri);
   }
 
-  if(!session) return <AuthScreen onSignIn={signIn} busy={busy} language={language} setLanguage={setLanguage}/>;
+  if(!session) return <AuthScreen onSignIn={signIn} onDemo={enterDemo} busy={busy} language={language} setLanguage={setLanguage}/>;
   if(!role || !factoryId) return <SafeAreaView style={s.center}><Text style={s.title}>Access not assigned</Text><Text style={s.muted}>This account must be an active owner or admin in factory_members.</Text><TouchableOpacity style={s.button} onPress={()=>supabase.auth.signOut()}><Text style={s.buttonText}>{t.signOut}</Text></TouchableOpacity></SafeAreaView>;
 
   const current = MODULES.find(m=>m.key===screen);
@@ -165,13 +172,14 @@ export default function App() {
   </SafeAreaView>;
 }
 
-function AuthScreen({onSignIn,busy,language,setLanguage}:any) {
+function AuthScreen({onSignIn,onDemo,busy,language,setLanguage}:any) {
   const [email,setEmail]=useState(""); const [password,setPassword]=useState("");
   return <SafeAreaView style={s.safe}><StatusBar style="dark"/><KeyboardAvoidingView behavior={Platform.OS==="ios"?"padding":undefined} style={s.auth}>
     <Text style={s.logo}>♻</Text><Text style={s.title}>RecycLedger</Text><Text style={s.muted}>Plastic factory management</Text>
     <TextInput style={s.input} placeholder={language==="en"?"Email":"ఈమెయిల్"} autoCapitalize="none" keyboardType="email-address" value={email} onChangeText={setEmail}/>
     <TextInput style={s.input} placeholder={language==="en"?"Password":"పాస్‌వర్డ్"} secureTextEntry value={password} onChangeText={setPassword}/>
     <TouchableOpacity style={s.button} disabled={busy} onPress={()=>onSignIn(email.trim(),password)}><Text style={s.buttonText}>{busy?"Please wait…":(language==="en"?"Sign in":"సైన్ ఇన్")}</Text></TouchableOpacity>
+    <TouchableOpacity style={[s.secondary,{marginTop:10}]} onPress={onDemo}><Text style={s.secondaryText}>{language==="en"?"Explore Demo Factory":"డెమో ఫ్యాక్టరీని చూడండి"}</Text></TouchableOpacity>
     <TouchableOpacity onPress={()=>setLanguage(language==="en"?"te":"en")}><Text style={s.link}>{language==="en"?"తెలుగులో చూడండి":"View in English"}</Text></TouchableOpacity>
     <Text style={s.hint}>Accounts are created by the factory owner in Supabase. Only active owners and admins can enter.</Text>
   </KeyboardAvoidingView></SafeAreaView>;
