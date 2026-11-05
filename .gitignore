@@ -5,3 +5,5 @@ web-build/
 .env
 *.db
 .vercel
+
+.vercel
